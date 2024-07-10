@@ -1,6 +1,6 @@
-//.strtab Section: Changed all bytes to 'f' (0x66).
-//.bss Section: Changed all bytes to 0xFF.
-//Dead Code in Main Function: Inserted 16 NOPs after the prologue of the main function.
+//.strtab Section: Changes all bytes to 'f' 
+//.bss Section: Changes all bytes to 0xFF.
+//Dead Code in Main Function: Inserts  NOPs after the prologue of the main function.
 
 #include <stdio.h>
 #include <stdlib.h>
