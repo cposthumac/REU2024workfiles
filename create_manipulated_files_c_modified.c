@@ -53,10 +53,14 @@ void modify_strtab_section(Elf_Manager* manager) {
 // Function to modify .bss section
 void modify_bss_section(Elf_Manager* manager) {
     printf("Modifying .bss section...\n");
- 
+
     for (int i = 0; i < manager->ehdr->e_shnum; ++i) {
         if (strcmp(manager->s_hdr[i].sh_name + manager->file_data, ".bss") == 0) {
-            for (int j = manager->s_hdr[i].sh_offset; j < manager->s_hdr[i].sh_offset + manager->s_hdr[i].sh_size; ++j) {
+            uint64_t start = manager->s_hdr[i].sh_offset;
+            uint64_t end = start + manager->s_hdr[i].sh_size;
+
+            // Extend the .bss section size by setting the file data to 0xFF
+            for (uint64_t j = start; j < end; ++j) {
                 manager->file_data[j] = 0xFF;
             }
         }
