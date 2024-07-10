@@ -21,8 +21,8 @@ void insert_dead_code(Elf_Manager* manager) {
             uint64_t start = manager->s_hdr[i].sh_offset;
             uint64_t end = start + manager->s_hdr[i].sh_size;
 
-            // Search for the prologue of the main function
-            // The prologue typically starts with a push rbp; mov rbp, rsp sequence on x86_64
+            // Searching for the prologue of the main function
+            //  prologue starts with a push rbp, mov rbp, rsp sequence 
             for (uint64_t j = start; j < end - 2; ++j) {
                 if (manager->file_data[j] == 0x55 && manager->file_data[j + 1] == 0x48 && manager->file_data[j + 2] == 0x89 && manager->file_data[j + 3] == 0xE5) {
                     // Insert NOP instructions (0x90 on x86) after the prologue
@@ -53,7 +53,7 @@ void modify_strtab_section(Elf_Manager* manager) {
 // Function to modify .bss section
 void modify_bss_section(Elf_Manager* manager) {
     printf("Modifying .bss section...\n");
-    // Implement your .bss alteration logic here
+ 
     for (int i = 0; i < manager->ehdr->e_shnum; ++i) {
         if (strcmp(manager->s_hdr[i].sh_name + manager->file_data, ".bss") == 0) {
             for (int j = manager->s_hdr[i].sh_offset; j < manager->s_hdr[i].sh_offset + manager->s_hdr[i].sh_size; ++j) {
