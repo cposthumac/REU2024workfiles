@@ -20,7 +20,6 @@ void insert_dead_code(Elf_Manager* manager) {
             // Calculate start and end of .main section
             uint64_t start = manager->s_hdr[i].sh_offset;
             uint64_t end = start + manager->s_hdr[i].sh_size;
-
             // Search for the prologue of the main function
             // Prologue starts with a push rbp, mov rbp, rsp sequence
             for (uint64_t j = start; j < end - 2; ++j) {
@@ -32,7 +31,7 @@ void insert_dead_code(Elf_Manager* manager) {
                         if (insertion_point + k < manager->s_hdr[i].sh_size) {
                             manager->file_sections[i][insertion_point + k] = 0x90;
                         } else {
-                            // Handle case where insertion goes beyond section size (optional)
+                            // Handling if  insertion goes beyond section size 
                             break;
                         }
                     }
