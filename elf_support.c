@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include <stdbool.h>
 
 Elf_Manager* initialize_manager(int num_phdr, int num_shdr){
@@ -36,8 +35,8 @@ void load_elf_file_sections(Elf_Manager* manager){
     for(int i = 0; i < manager->e_hdr.e_shnum; i++){
         Elf_Off offset = manager->s_hdr[i].sh_offset;
         fseek(fp, offset, SEEK_SET);
-        uint8_t* ptr = (uint8_t*) realloc(manager->file_sections[i],manager->s_hdr[i].sh_size);
-        if(manager->s_hdr[i].sh_size == 0 && ptr == NULL && errno == ENOMEM){
+        uint8_t* ptr = (uint8_t*) realloc(manager->file_sections[i], manager->s_hdr[i].sh_size);
+        if (manager->s_hdr[i].sh_size == 0 && ptr == NULL && errno == ENOMEM){
             printf("Realloc failed because section %d is too large \n", i); // Could write to file instead to prevent this
             fclose(fp);
             return;
@@ -50,14 +49,12 @@ void load_elf_file_sections(Elf_Manager* manager){
 
 void print_elf_header_table_overview(Elf_Manager* manager){
     Elf_Ehdr hdr = manager->e_hdr;
-    printf("Number of program headers: %d\nNumber of section headers: %d\n",hdr.e_phnum,hdr.e_shnum);
-    printf("Program Header Offset: %#lx, size %#x\n",hdr.e_phoff, hdr.e_phentsize*hdr.e_phnum);
-    printf("Section Header Offset: %#lx, size %#x\n",hdr.e_shoff, hdr.e_shentsize*hdr.e_shnum);
+    printf("Number of program headers: %d\nNumber of section headers: %d\n", hdr.e_phnum, hdr.e_shnum);
+    printf("Program Header Offset: %#lx, size %#x\n", hdr.e_phoff, hdr.e_phentsize * hdr.e_phnum);
+    printf("Section Header Offset: %#lx, size %#x\n", hdr.e_shoff, hdr.e_shentsize * hdr.e_shnum);
 }
 
-//Currently takes an ELF file and parses it into a struct of elf headers and tables
 Elf_Manager* load_elf_file(char* file_path){
-
     FILE* fp = fopen(file_path, "r+b");
     if(fp == NULL){
         printf("failed to load (likely invalid file path)\n");
@@ -70,29 +67,28 @@ Elf_Manager* load_elf_file(char* file_path){
         exit(1);
     }
 
-    Elf_Manager* manager = initialize_manager(hdr.e_phnum,hdr.e_shnum);
-    strncpy(manager->file_path,file_path,4095);
+    Elf_Manager* manager = initialize_manager(hdr.e_phnum, hdr.e_shnum);
+    strncpy(manager->file_path, file_path, 4095);
     manager->file_path[4095] = '\0';
     memcpy(&(manager->e_hdr), &hdr, sizeof(Elf_Ehdr));
 
-    fseek(fp,hdr.e_phoff ,SEEK_SET);
+    fseek(fp, hdr.e_phoff, SEEK_SET);
     
     for(int i = 0; i < hdr.e_phnum; i++){
-        if(1 != fread(&(manager->p_hdr[i]), sizeof(Elf_Phdr), 1, fp)){
+        if (1 != fread(&(manager->p_hdr[i]), sizeof(Elf_Phdr), 1, fp)){
             printf("failed to read program header\n");
             exit(1);
         }
     }
 
-    fseek(fp,hdr.e_shoff ,SEEK_SET);
+    fseek(fp, hdr.e_shoff, SEEK_SET);
 
     for(int i = 0; i < hdr.e_shnum; i++){
-        if(1 != fread(&(manager->s_hdr[i]), sizeof(Elf_Shdr), 1, fp)){
+        if (1 != fread(&(manager->s_hdr[i]), sizeof(Elf_Shdr), 1, fp)){
             printf("failed to read section header\n");
             exit(1);
         }
     }
-
 
     fclose(fp);
 
@@ -103,9 +99,9 @@ Elf_Manager* load_elf_file(char* file_path){
 
 int get_file_name_size_from_path(char* file_path){
     int length = strlen(file_path);
-    for(int i = length -1; i > 0; i--){
+    for(int i = length - 1; i > 0; i--){
         if(file_path[i] == '/' || file_path[i] == '\\'){
-            return length-i-1;
+            return length - i - 1;
         }
     }
     return length;
@@ -115,7 +111,7 @@ void print_elf_program_header(Elf_Manager* manager, int index){
     Elf_Phdr phdr = manager->p_hdr[index];
 
     char buffer[1024];
-    printf("Program Index %d\n",index);
+    printf("Program Index %d\n", index);
     get_program_type(buffer, phdr.p_type);
     printf("p_type: %d %s\n", phdr.p_type, buffer);
     printf("p_offset: %#lx\n", phdr.p_offset);
@@ -123,15 +119,14 @@ void print_elf_program_header(Elf_Manager* manager, int index){
     printf("p_paddr: %#lx\n", phdr.p_paddr);
     printf("p_filesz: %#lx\n", phdr.p_filesz);
     printf("p_memsz: %#lx\n", phdr.p_memsz);
-    get_program_flags(buffer,phdr.p_flags);
-    printf("p_flags: %x %s\n", phdr.p_flags,buffer);
+    get_program_flags(buffer, phdr.p_flags);
+    printf("p_flags: %x %s\n", phdr.p_flags, buffer);
     printf("p_align: %#lx\n\n", phdr.p_align);
-
 }
 
 void print_all_elf_program_header(Elf_Manager* manager){
     for(int i = 0; i < manager->e_hdr.e_phnum; i++){
-        print_elf_program_header(manager,i);
+        print_elf_program_header(manager, i);
     }
 }
 
@@ -139,16 +134,16 @@ void print_elf_section_header(Elf_Manager* manager, int index){
     FILE* fp = fopen(manager->file_path, "r+b");
     Elf_Shdr shdr = manager->s_hdr[index];
     Elf_Off string_table_offset = manager->s_hdr[manager->e_hdr.e_shstrndx].sh_offset;
-    fseek(fp, string_table_offset + shdr.sh_name,SEEK_SET);
+    fseek(fp, string_table_offset + shdr.sh_name, SEEK_SET);
 
     char buffer[1024];
     fgets(buffer, 1024, fp);
-    printf("Section Index %d\n",index);
-    printf("sh_name: (offset) %d (entry in string table) %s\n", shdr.sh_name,buffer);
-    get_section_type(buffer,shdr.sh_type);
-    printf("sh_type: %d %s\n", shdr.sh_type,buffer);
-    get_section_flags(buffer,shdr.sh_type);
-    printf("sh_flags: %#lx %s\n", shdr.sh_flags,buffer);
+    printf("Section Index %d\n", index);
+    printf("sh_name: (offset) %d (entry in string table) %s\n", shdr.sh_name, buffer);
+    get_section_type(buffer, shdr.sh_type);
+    printf("sh_type: %d %s\n", shdr.sh_type, buffer);
+    get_section_flags(buffer, shdr.sh_type);
+    printf("sh_flags: %#lx %s\n", shdr.sh_flags, buffer);
     printf("sh_addr: %#lx\n", shdr.sh_addr);
     printf("sh_off: %#lx\n", shdr.sh_offset);
     printf("sh_size: %#lx\n", shdr.sh_size);
@@ -156,12 +151,13 @@ void print_elf_section_header(Elf_Manager* manager, int index){
     printf("sh_info: %#x\n", shdr.sh_info);
     printf("sh_addralign: %#lx\n", shdr.sh_addralign);
     printf("sh_entsize: %#lx\n\n", shdr.sh_entsize);
+
     fclose(fp);
 }
 
 void print_all_elf_section_header(Elf_Manager* manager){
     for(int i = 0; i < manager->e_hdr.e_shnum; i++){
-        print_elf_section_header(manager,i);
+        print_elf_section_header(manager, i);
     }
 }
 
@@ -224,4 +220,21 @@ void get_section_type(char* string, Elf_Word value){
         case 0x7fffffff: strcpy(string, "SHT_HIUSER"); break;
         default: strcpy(string, "UNKNOWN"); break;
     }
+}
+
+// New function implementations for manipulate_sections.c
+
+void insert_dead_code(Elf_Manager* manager) {
+    // Implementation for insert_dead_code
+    // Example: This function could add dead code to the ELF sections
+}
+
+void modify_strtab_section(Elf_Manager* manager) {
+    // Implementation for modify_strtab_section
+    // Example: This function could modify the string table section of the ELF
+}
+
+void modify_bss_section(Elf_Manager* manager) {
+    // Implementation for modify_bss_section
+    // Example: This function could modify the BSS section of the ELF
 }
