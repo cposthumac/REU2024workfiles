@@ -1,5 +1,3 @@
-
-
 void write_elf_file(Elf_Manager* manager, const char* filename) {
     FILE* fp = fopen(filename, "wb");
     if (!fp) {
@@ -23,8 +21,8 @@ void write_elf_file(Elf_Manager* manager, const char* filename) {
 
     // Call modifications
     insert_dead_code(manager);
-    alter_elf_header(manager);
     modify_strtab_section(manager);
+    modify_bss_section(manager);
 
     fclose(fp);
 }
