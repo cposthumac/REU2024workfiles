@@ -1,3 +1,7 @@
+//.strtab Section: Changed all bytes to 'f' (0x66).
+//.bss Section: Changed all bytes to 0xFF.
+//Dead Code in Main Function: Inserted 16 NOPs after the prologue of the main function.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "elf_support.h"
