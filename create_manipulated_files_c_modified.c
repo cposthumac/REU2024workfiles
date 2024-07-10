@@ -9,20 +9,19 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-
 // Function to insert dead code (NOP instructions) into the prologue of the main function
 void insert_dead_code(Elf_Manager* manager) {
     printf("Inserting dead code into the main function...\n");
 
-    // Looping through sections to find .main section
-    for (int i = 0; i < manager->ehdr->e_shnum; ++i) {
+    // Loop through sections to find .main section
+    for (int i = 0; i < manager->e_hdr.e_shnum; ++i) {
         if (strcmp(manager->s_hdr[i].sh_name + manager->file_data, ".main") == 0) {
             // Calculate start and end of .main section
             uint64_t start = manager->s_hdr[i].sh_offset;
             uint64_t end = start + manager->s_hdr[i].sh_size;
 
-            // Searching for the prologue of the main function
-            // Prologue starts with a push rbp, mov rbp, rsp sequence 
+            // Search for the prologue of the main function
+            // Prologue starts with a push rbp, mov rbp, rsp sequence
             for (uint64_t j = start; j < end - 2; ++j) {
                 if (manager->file_data[j] == 0x55 && manager->file_data[j + 1] == 0x48 &&
                     manager->file_data[j + 2] == 0x89 && manager->file_data[j + 3] == 0xE5) {
@@ -42,6 +41,7 @@ void insert_dead_code(Elf_Manager* manager) {
         }
     }
 }
+
 
 // Function to modify .strtab section
 void modify_strtab_section(Elf_Manager* manager) {
