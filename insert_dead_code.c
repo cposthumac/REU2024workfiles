@@ -1,24 +1,24 @@
-// insert_dead_code.c
+
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Simulated ELF header structures
+
 typedef struct {
     uint64_t sh_offset;
     uint64_t sh_size;
 } Elf_Shdr;
 
 typedef struct {
-    int e_shnum; // Number of sections; add other necessary fields
+    int e_shnum; 
 } Elf_Ehdr;
 
 typedef struct {
-    char* file_sections[10];  // Array to hold section data; adjust size as needed
-    Elf_Shdr s_hdr[10];       // Section headers; adjust size as needed
-    Elf_Ehdr e_hdr;           // ELF header; add necessary fields
+    char* file_sections[10];  
+    Elf_Shdr s_hdr[10];      
+    Elf_Ehdr e_hdr;           
 } Elf_Manager;
 
 // Function to simulate loading an ELF file and its sections
@@ -40,13 +40,13 @@ Elf_Manager* load_elf_file(const char* file_path) {
 void insert_dead_code(Elf_Manager* manager) {
     printf("Inserting dead code into the main function...\n");
 
-    // Simulated identification of .main section and prologue detection
-    int i = 0;  // Assuming 0 for simplicity
+    // finding .main section and prologue 
+    int i = 0;  
     Elf_Shdr main_section = manager->s_hdr[i];
     uint64_t start = main_section.sh_offset;
     uint64_t end = start + main_section.sh_size;
 
-    // Simulated prologue sequence: push rbp, mov rbp, rsp
+    //  prologue sequence: push rbp, mov rbp, rsp
     uint8_t prologue[] = {0x55, 0x48, 0x89, 0xE5};
 
     // Search for the prologue sequence
