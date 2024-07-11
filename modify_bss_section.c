@@ -10,9 +10,9 @@ typedef struct {
 } Elf_Shdr;
 
 typedef struct {
-    char* file_sections[10];  // Array to hold section data
-    Elf_Shdr s_hdr[10];       // Section headers
-    int e_shnum;              // Number of sections
+    char* file_sections[10];  
+    Elf_Shdr s_hdr[10];       
+    int e_shnum;             
 } Elf_Manager;
 
 
@@ -87,7 +87,6 @@ int main() {
     // Modify .bss section
     modify_bss_section(manager);
 
-    // Print modified section for demonstration
     printf("Modified .bss section:\n");
     for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
         printf("%02X ", manager->file_sections[0][i]);
@@ -102,3 +101,4 @@ int main() {
 
     return 0;
 }
+
