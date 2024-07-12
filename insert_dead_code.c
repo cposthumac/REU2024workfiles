@@ -49,7 +49,7 @@ Elf_Manager* load_elf_file(const char* file_path) {
     return manager;
 }
 
-// Function to insert dead code (NOP instructions) into the prologue of the main function
+// inserting dead code (NOP instructions) into the prologue of the main function
 void insert_dead_code(Elf_Manager* manager) {
     printf("Inserting dead code into the main function...\n");
 
@@ -72,7 +72,7 @@ void insert_dead_code(Elf_Manager* manager) {
         return;
     }
 
-    // Search for the prologue sequence
+    // searching for the prologue sequence
     for (uint64_t j = start; j < end - sizeof(prologue); ++j) {
         if (memcmp(manager->file_sections[i] + j, prologue, sizeof(prologue)) == 0) {
             // Insert NOP instructions (0x90) after the prologue
@@ -81,7 +81,7 @@ void insert_dead_code(Elf_Manager* manager) {
                 if (insertion_point + k < main_section.sh_size) {
                     manager->file_sections[i][insertion_point + k] = 0x90;
                 } else {
-                    // Handle if insertion goes beyond section size
+                    // Handling if insertion goes beyond section size
                     break;
                 }
             }
@@ -111,7 +111,7 @@ int main() {
     // Inserting dead code
     insert_dead_code(manager);
 
-    // Print modified section
+    // Printing modified section
     printf("Modified .main section:\n");
     for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
         printf("%02X ", manager->file_sections[0][i]);
@@ -121,7 +121,7 @@ int main() {
     }
     printf("\n");
 
-    // Free allocated memory
+    // Freeing allocated memory
     free_manager(manager);
 
     return 0;
