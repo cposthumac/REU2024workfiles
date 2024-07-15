@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 typedef struct {
     uint64_t sh_offset;
     uint64_t sh_size;
@@ -15,7 +14,6 @@ typedef struct {
     int e_shnum;             
 } Elf_Manager;
 
-
 Elf_Manager* load_elf_file(const char* file_path) {
     Elf_Manager* manager = malloc(sizeof(Elf_Manager));
     if (manager == NULL) {
@@ -23,12 +21,10 @@ Elf_Manager* load_elf_file(const char* file_path) {
         return NULL;
     }
 
-
     for (int i = 0; i < 10; ++i) {
         manager->file_sections[i] = NULL;
     }
 
- 
     manager->file_sections[0] = malloc(16); 
     if (manager->file_sections[0] == NULL) {
         perror("Error allocating memory for .bss section");
@@ -36,7 +32,6 @@ Elf_Manager* load_elf_file(const char* file_path) {
         return NULL;
     }
 
-  
     manager->s_hdr[0].sh_offset = 0;
     manager->s_hdr[0].sh_size = 16; 
 
@@ -45,7 +40,7 @@ Elf_Manager* load_elf_file(const char* file_path) {
     return manager;
 }
 
-// Function to modify .bss section
+// modifyING .bss section
 void modify_bss_section(Elf_Manager* manager) {
     printf("Modifying .bss section...\n");
 
@@ -54,7 +49,6 @@ void modify_bss_section(Elf_Manager* manager) {
         return;
     }
 
- 
     int i = 0;  
     Elf_Shdr bss_section = manager->s_hdr[i];
     uint64_t start = bss_section.sh_offset;
@@ -66,7 +60,6 @@ void modify_bss_section(Elf_Manager* manager) {
     }
 }
 
-
 void free_manager(Elf_Manager* manager) {
     if (manager == NULL) return;
 
@@ -77,17 +70,27 @@ void free_manager(Elf_Manager* manager) {
 }
 
 int main() {
-   
     Elf_Manager* manager = load_elf_file("dummy_file.elf");
     if (manager == NULL) {
         fprintf(stderr, "Error loading ELF file\n");
         return 1;
     }
 
+    // Print initial state of .bss section
+    printf("Before modification:\n");
+    for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
+        printf("%02X ", manager->file_sections[0][i]);
+        if ((i + 1) % 8 == 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+
     // Modify .bss section
     modify_bss_section(manager);
 
-    printf("Modified .bss section:\n");
+    // Print modified .bss section
+    printf("After modification:\n");
     for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
         printf("%02X ", manager->file_sections[0][i]);
         if ((i + 1) % 8 == 0) {
@@ -101,4 +104,3 @@ int main() {
 
     return 0;
 }
-
