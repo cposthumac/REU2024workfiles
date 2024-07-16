@@ -14,7 +14,7 @@ typedef struct {
     int e_shnum;             
 } Elf_Manager;
 
-Elf_Manager* load_elf_file(const char* file_path) {
+Elf_Manager* load_elf_file() {
     Elf_Manager* manager = malloc(sizeof(Elf_Manager));
     if (manager == NULL) {
         perror("Error allocating memory for Elf_Manager");
@@ -32,6 +32,9 @@ Elf_Manager* load_elf_file(const char* file_path) {
         return NULL;
     }
 
+    // Initial .bss section contents
+    strcpy(manager->file_sections[0], "GCC: (Ubuntu 13.10");
+
     manager->s_hdr[0].sh_offset = 0;
     manager->s_hdr[0].sh_size = 16; 
 
@@ -40,7 +43,7 @@ Elf_Manager* load_elf_file(const char* file_path) {
     return manager;
 }
 
-// modifyING .bss section
+// Function to modify .bss section
 void modify_bss_section(Elf_Manager* manager) {
     printf("Modifying .bss section...\n");
 
@@ -70,7 +73,7 @@ void free_manager(Elf_Manager* manager) {
 }
 
 int main() {
-    Elf_Manager* manager = load_elf_file("dummy_file.elf");
+    Elf_Manager* manager = load_elf_file();
     if (manager == NULL) {
         fprintf(stderr, "Error loading ELF file\n");
         return 1;
