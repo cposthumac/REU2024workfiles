@@ -1,7 +1,3 @@
-//.strtab Section: Changes all bytes to 'f' 
-//.bss Section: Changes all bytes to 0xFF.
-//Dead Code in Main Function: Inserts  NOPs after the prologue of the main function.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "elf_support.h"
@@ -31,7 +27,7 @@ void insert_dead_code(Elf_Manager* manager) {
                         if (insertion_point + k < manager->s_hdr[i].sh_size) {
                             manager->file_sections[i][insertion_point + k] = 0x90;
                         } else {
-                            // Handling if  insertion goes beyond section size 
+                            // Handling if insertion goes beyond section size 
                             break;
                         }
                     }
@@ -59,6 +55,22 @@ void modify_bss_section(Elf_Manager* manager) {
     }
 }
 
+// Function to modify .strtab section
+void modify_strtab_section(Elf_Manager* manager) {
+    printf("Modifying .strtab section...\n");
+
+    for (int i = 0; i < manager->e_hdr.e_shnum; ++i) {
+        if (strcmp(manager->s_hdr[i].sh_name + manager->file_sections[i], ".strtab") == 0) {
+            uint64_t start = manager->s_hdr[i].sh_offset;
+            uint64_t end = start + manager->s_hdr[i].sh_size;
+
+            // Set all bytes in .strtab section to 'f'
+            for (uint64_t j = start; j < end; ++j) {
+                manager->file_sections[i][j] = 'f';
+            }
+        }
+    }
+}
 
 int main(int argc, char** argv) {
     if (argc < 4) {
