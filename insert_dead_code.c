@@ -25,54 +25,35 @@ Elf_Manager* load_elf_file() {
         manager->file_sections[i] = NULL;
     }
 
-    manager->file_sections[0] = malloc(16); 
-    if (manager->file_sections[0] == NULL) {
-        perror("Error allocating memory for .main section");
-        free(manager);
-        return NULL;
-    }
-
-    // Initial .main section contents
-    strcpy(manager->file_sections[0], "\x55\x48\x89\xE5\x48\x83\xEC\x20\x48\x89\x7D\xE8\x48\x83\x7D\xE8");
-
-    manager->s_hdr[0].sh_offset = 0;
-    manager->s_hdr[0].sh_size = 16; 
-
     manager->e_shnum = 10;
 
     return manager;
 }
 
-// Function to insert dead code (NOP instructions) into the prologue of the main function
-void insert_dead_code(Elf_Manager* manager) {
-    printf("Inserting dead code into the main function...\n");
+void insert_dead_code(Elf_Manager* manager, int section_index) {
+    printf("Inserting dead code into section %d...\n", section_index);
 
-    if (manager == NULL || manager->file_sections[0] == NULL) {
+    if (manager == NULL || manager->file_sections[section_index] == NULL) {
         fprintf(stderr, "Error: Null pointer encountered.\n");
         return;
     }
 
-    int i = 0;  
-    Elf_Shdr main_section = manager->s_hdr[i];
-    uint64_t start = main_section.sh_offset;
-    uint64_t end = start + main_section.sh_size;
+    uint64_t start = manager->s_hdr[section_index].sh_offset;
+    uint64_t end = start + manager->s_hdr[section_index].sh_size;
 
-    // Prologue sequence: push rbp, mov rbp, rsp
     uint8_t prologue[] = {0x55, 0x48, 0x89, 0xE5};
 
-    if (end < sizeof(prologue)) {
+    if (manager->s_hdr[section_index].sh_size < sizeof(prologue)) {
         fprintf(stderr, "Section size is too small for prologue.\n");
         return;
     }
 
-    // Searching for the prologue sequence
     for (uint64_t j = start; j < end - sizeof(prologue); ++j) {
-        if (memcmp(manager->file_sections[i] + j, prologue, sizeof(prologue)) == 0) {
-            // Insert NOP instructions (0x90) after the prologue
+        if (memcmp(manager->file_sections[section_index] + j, prologue, sizeof(prologue)) == 0) {
             uint64_t insertion_point = j + sizeof(prologue);
-            for (uint64_t k = 0; k < 16; ++k) { // Insert 16 NOPs
-                if (insertion_point + k < main_section.sh_size) {
-                    manager->file_sections[i][insertion_point + k] = 0x90;
+            for (uint64_t k = 0; k < 16; ++k) {
+                if (insertion_point + k < manager->s_hdr[section_index].sh_size) {
+                    manager->file_sections[section_index][insertion_point + k] = 0x90;
                 } else {
                     break;
                 }
@@ -98,23 +79,29 @@ int main() {
         return 1;
     }
 
-    // Print initial state of .main section
-    printf(".main prior to modification:\n");
-    for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
-        printf("%02X ", manager->file_sections[0][i]);
-        if ((i + 1) % 8 == 0) {
-            printf("\n");
-        }
+    // Example section index
+    int section_index = 0;
+
+    // Allocate memory for a section
+    manager->file_sections[section_index] = malloc(64);
+    if (manager->file_sections[section_index] == NULL) {
+        perror("Error allocating memory for section");
+        free_manager(manager);
+        return 1;
     }
-    printf("\n");
+
+   
+    manager->s_hdr[section_index].sh_offset = 0;
+    manager->s_hdr[section_index].sh_size = 64;
+    memset(manager->file_sections[section_index], 0x48, 64); // Fill with 0x48 (dummy data)
 
     // Insert dead code
-    insert_dead_code(manager);
+    insert_dead_code(manager, section_index);
 
-    // Print modified .main section
-    printf("Modified .main section:\n");
-    for (int i = 0; i < manager->s_hdr[0].sh_size; ++i) {
-        printf("%02X ", manager->file_sections[0][i]);
+    // Print modified section
+    printf("Modified section %d:\n", section_index);
+    for (int i = 0; i < manager->s_hdr[section_index].sh_size; ++i) {
+        printf("%02X ", manager->file_sections[section_index][i]);
         if ((i + 1) % 8 == 0) {
             printf("\n");
         }
